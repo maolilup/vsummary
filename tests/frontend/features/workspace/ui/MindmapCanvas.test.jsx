@@ -2,12 +2,18 @@ import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 
 // Mock markmap before importing the component
+const { defaultMarkmapInstance } = vi.hoisted(() => ({
+  defaultMarkmapInstance: () => ({
+    destroy: vi.fn(),
+    fit: vi.fn(() => Promise.resolve()),
+    state: { rect: { x1: 0, x2: 100, y1: 0, y2: 100 } },
+    svg: { node: vi.fn(() => ({ classList: { add: vi.fn(), remove: vi.fn() } })) },
+    zoom: { transform: vi.fn() },
+  }),
+}));
 vi.mock("markmap-view", () => ({
   Markmap: {
-    create: vi.fn(() => ({
-      destroy: vi.fn(),
-      svg: { node: vi.fn(() => ({ classList: { add: vi.fn(), remove: vi.fn() } })) },
-    })),
+    create: vi.fn(defaultMarkmapInstance),
   },
 }));
 vi.mock("markmap-toolbar", () => ({
@@ -36,7 +42,10 @@ const fakeRoot = {
 };
 
 describe("MindmapCanvas — markmap integration", () => {
-  beforeEach(() => { vi.clearAllMocks(); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    Markmap.create.mockImplementation(defaultMarkmapInstance);
+  });
 
   it("renders SVG when root is provided", () => {
     const { container } = render(
@@ -84,5 +93,24 @@ describe("MindmapCanvas — markmap integration", () => {
       </div>
     );
     expect(Toolbar.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("T8: writes the markmap instance to markmapRef on render", () => {
+    const markmapRef = { current: null };
+    render(
+      <MindmapCanvas root={fakeRoot} selectedNodeId={null} onSelectNode={vi.fn()} markmapRef={markmapRef} />
+    );
+    expect(markmapRef.current).not.toBeNull();
+    expect(typeof markmapRef.current.fit).toBe("function");
+  });
+
+  it("T9: clears markmapRef on unmount", () => {
+    const markmapRef = { current: null };
+    const { unmount } = render(
+      <MindmapCanvas root={fakeRoot} selectedNodeId={null} onSelectNode={vi.fn()} markmapRef={markmapRef} />
+    );
+    expect(markmapRef.current).not.toBeNull();
+    unmount();
+    expect(markmapRef.current).toBeNull();
   });
 });
