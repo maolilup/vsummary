@@ -5,7 +5,10 @@ vi.mock("markmap-view", () => ({
   Markmap: {
     create: vi.fn(() => ({
       destroy: vi.fn(),
+      fit: vi.fn(() => Promise.resolve()),
+      state: { rect: { x1: 0, x2: 100, y1: 0, y2: 100 } },
       svg: { node: vi.fn(() => ({ classList: { add: vi.fn(), remove: vi.fn() } })) },
+      zoom: { transform: vi.fn() },
     })),
   },
 }));
@@ -22,6 +25,11 @@ vi.mock("d3", () => ({
   })),
 }));
 
+vi.mock("@src/features/workspace/ui/mindmapPNGExport", () => ({
+  exportMindmapAsPNG: vi.fn(() => Promise.resolve()),
+}));
+
+import { exportMindmapAsPNG } from "@src/features/workspace/ui/mindmapPNGExport";
 import { WorkspaceSeriesMindmapView } from "@src/features/workspace/ui/views/WorkspaceSeriesMindmapView";
 
 const fakeMindmap = {
@@ -187,5 +195,27 @@ describe("WorkspaceSeriesMindmapView — elapsed time progress", () => {
       />
     );
     expect(screen.queryByText(/已用.*秒/)).toBeNull();
+  });
+});
+
+describe("WorkspaceSeriesMindmapView — PNG export wiring", () => {
+  const baseProps = {
+    seriesId: "s1", seriesMindmap: fakeMindmap, seriesMindmapAvailable: true,
+    seriesMindmapLoading: false, generatingSeriesMindmap: false,
+    selectedNode: null, onFocusNode: vi.fn(), onGenerateSeriesMindmap: vi.fn(),
+    mindmapGenerationProgress: null,
+  };
+
+  it("T10-series: PNG option calls exportMindmapAsPNG with the markmap instance and series filename", async () => {
+    exportMindmapAsPNG.mockClear();
+    const { Markmap } = await import("markmap-view");
+
+    render(<WorkspaceSeriesMindmapView {...baseProps} />);
+    const fakeMm = Markmap.create.mock.results[Markmap.create.mock.results.length - 1].value;
+    fireEvent.click(screen.getByText("导出"));
+    fireEvent.click(screen.getByText("PNG (.png)"));
+
+    expect(exportMindmapAsPNG).toHaveBeenCalledTimes(1);
+    expect(exportMindmapAsPNG).toHaveBeenCalledWith(fakeMm, "series-mindmap-s1.png");
   });
 });
