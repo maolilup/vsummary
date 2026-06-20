@@ -2,18 +2,15 @@ import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 
 // Mock markmap before importing the component
-const { defaultMarkmapInstance } = vi.hoisted(() => ({
-  defaultMarkmapInstance: () => ({
-    destroy: vi.fn(),
-    fit: vi.fn(() => Promise.resolve()),
-    state: { rect: { x1: 0, x2: 100, y1: 0, y2: 100 } },
-    svg: { node: vi.fn(() => ({ classList: { add: vi.fn(), remove: vi.fn() } })) },
-    zoom: { transform: vi.fn() },
-  }),
-}));
 vi.mock("markmap-view", () => ({
   Markmap: {
-    create: vi.fn(defaultMarkmapInstance),
+    create: vi.fn(() => ({
+      destroy: vi.fn(),
+      fit: vi.fn(() => Promise.resolve()),
+      state: { rect: { x1: 0, x2: 100, y1: 0, y2: 100 } },
+      svg: { node: vi.fn(() => ({ classList: { add: vi.fn(), remove: vi.fn() } })) },
+      zoom: { transform: vi.fn() },
+    })),
   },
 }));
 vi.mock("markmap-toolbar", () => ({
@@ -42,10 +39,7 @@ const fakeRoot = {
 };
 
 describe("MindmapCanvas — markmap integration", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    Markmap.create.mockImplementation(defaultMarkmapInstance);
-  });
+  beforeEach(() => { vi.clearAllMocks(); });
 
   it("renders SVG when root is provided", () => {
     const { container } = render(
@@ -96,6 +90,13 @@ describe("MindmapCanvas — markmap integration", () => {
   });
 
   it("T8: writes the markmap instance to markmapRef on render", () => {
+    Markmap.create.mockReturnValue({
+      destroy: vi.fn(),
+      fit: vi.fn(() => Promise.resolve()),
+      state: { rect: { x1: 0, x2: 100, y1: 0, y2: 100 } },
+      svg: { node: vi.fn(() => ({ classList: { add: vi.fn(), remove: vi.fn() } })) },
+      zoom: { transform: vi.fn() },
+    });
     const markmapRef = { current: null };
     render(
       <MindmapCanvas root={fakeRoot} selectedNodeId={null} onSelectNode={vi.fn()} markmapRef={markmapRef} />
@@ -105,6 +106,13 @@ describe("MindmapCanvas — markmap integration", () => {
   });
 
   it("T9: clears markmapRef on unmount", () => {
+    Markmap.create.mockReturnValue({
+      destroy: vi.fn(),
+      fit: vi.fn(() => Promise.resolve()),
+      state: { rect: { x1: 0, x2: 100, y1: 0, y2: 100 } },
+      svg: { node: vi.fn(() => ({ classList: { add: vi.fn(), remove: vi.fn() } })) },
+      zoom: { transform: vi.fn() },
+    });
     const markmapRef = { current: null };
     const { unmount } = render(
       <MindmapCanvas root={fakeRoot} selectedNodeId={null} onSelectNode={vi.fn()} markmapRef={markmapRef} />

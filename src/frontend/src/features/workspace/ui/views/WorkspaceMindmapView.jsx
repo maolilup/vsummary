@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { LoaderCircle, Network, Download, RefreshCw } from "lucide-react";
 
 import { MindmapCanvas } from "../MindmapCanvas";
-import { exportMindmapAsPNG } from "../mindmapPNGExport";
+import { exportMindmapAsSVG } from "../mindmapSVGExport";
 import { WorkspaceStateBlock } from "../shared/WorkspaceStateBlock";
 
 export function WorkspaceMindmapView({
@@ -154,11 +154,11 @@ export function WorkspaceMindmapView({
                 onClick={() => {
                   setExportOpen(false);
                   if (markmapRef.current) {
-                    exportMindmapAsPNG(markmapRef.current, `mindmap-${videoId}.png`);
+                    exportMindmapAsSVG(markmapRef.current, `mindmap-${videoId}.svg`);
                   }
                 }}
               >
-                PNG (.png)
+                SVG (.svg)
               </button>
             </div>
           )}

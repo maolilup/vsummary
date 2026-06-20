@@ -3,7 +3,7 @@ import { LoaderCircle, Network, Download, RefreshCw } from "lucide-react";
 
 import { MindmapCanvas } from "../MindmapCanvas";
 import { WorkspaceStateBlock } from "../shared/WorkspaceStateBlock";
-import { exportMindmapAsPNG } from "../mindmapPNGExport";
+import { exportMindmapAsSVG } from "../mindmapSVGExport";
 
 export function WorkspaceSeriesMindmapView({
   seriesId,
@@ -147,11 +147,11 @@ export function WorkspaceSeriesMindmapView({
                 onClick={() => {
                   setExportOpen(false);
                   if (markmapRef.current) {
-                    exportMindmapAsPNG(markmapRef.current, `series-mindmap-${seriesId}.png`);
+                    exportMindmapAsSVG(markmapRef.current, `series-mindmap-${seriesId}.svg`);
                   }
                 }}
               >
-                PNG (.png)
+                SVG (.svg)
               </button>
             </div>
           )}

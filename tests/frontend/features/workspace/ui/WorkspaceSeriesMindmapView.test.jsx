@@ -25,11 +25,11 @@ vi.mock("d3", () => ({
   })),
 }));
 
-vi.mock("@src/features/workspace/ui/mindmapPNGExport", () => ({
-  exportMindmapAsPNG: vi.fn(() => Promise.resolve()),
+vi.mock("@src/features/workspace/ui/mindmapSVGExport", () => ({
+  exportMindmapAsSVG: vi.fn(() => Promise.resolve()),
 }));
 
-import { exportMindmapAsPNG } from "@src/features/workspace/ui/mindmapPNGExport";
+import { exportMindmapAsSVG } from "@src/features/workspace/ui/mindmapSVGExport";
 import { WorkspaceSeriesMindmapView } from "@src/features/workspace/ui/views/WorkspaceSeriesMindmapView";
 
 const fakeMindmap = {
@@ -105,7 +105,7 @@ describe("WorkspaceSeriesMindmapView — export dropdown", () => {
     fireEvent.click(screen.getByText("导出"));
     expect(screen.getByText("Markdown (.md)")).toBeTruthy();
     expect(screen.getByText("HTML (.html)")).toBeTruthy();
-    expect(screen.getByText("PNG (.png)")).toBeTruthy();
+    expect(screen.getByText("SVG (.svg)")).toBeTruthy();
   });
 
   it("closes dropdown on option click", () => {
@@ -198,7 +198,7 @@ describe("WorkspaceSeriesMindmapView — elapsed time progress", () => {
   });
 });
 
-describe("WorkspaceSeriesMindmapView — PNG export wiring", () => {
+describe("WorkspaceSeriesMindmapView — SVG export wiring", () => {
   const baseProps = {
     seriesId: "s1", seriesMindmap: fakeMindmap, seriesMindmapAvailable: true,
     seriesMindmapLoading: false, generatingSeriesMindmap: false,
@@ -206,16 +206,19 @@ describe("WorkspaceSeriesMindmapView — PNG export wiring", () => {
     mindmapGenerationProgress: null,
   };
 
-  it("T10-series: PNG option calls exportMindmapAsPNG with the markmap instance and series filename", async () => {
-    exportMindmapAsPNG.mockClear();
+  it("T10-series: SVG option calls exportMindmapAsSVG with the markmap instance and series filename", async () => {
+    exportMindmapAsSVG.mockClear();
     const { Markmap } = await import("markmap-view");
 
     render(<WorkspaceSeriesMindmapView {...baseProps} />);
+    // Capture fakeMm AFTER the render so it reflects this test's markmap instance,
+    // not a stale entry from a previous test that already called Markmap.create.
     const fakeMm = Markmap.create.mock.results[Markmap.create.mock.results.length - 1].value;
-    fireEvent.click(screen.getByText("导出"));
-    fireEvent.click(screen.getByText("PNG (.png)"));
 
-    expect(exportMindmapAsPNG).toHaveBeenCalledTimes(1);
-    expect(exportMindmapAsPNG).toHaveBeenCalledWith(fakeMm, "series-mindmap-s1.png");
+    fireEvent.click(screen.getByText("导出"));
+    fireEvent.click(screen.getByText("SVG (.svg)"));
+
+    expect(exportMindmapAsSVG).toHaveBeenCalledTimes(1);
+    expect(exportMindmapAsSVG).toHaveBeenCalledWith(fakeMm, "series-mindmap-s1.svg");
   });
 });
